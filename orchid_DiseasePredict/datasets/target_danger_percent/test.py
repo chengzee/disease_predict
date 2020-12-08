@@ -1,0 +1,10 @@
+import numpy as np
+a = np.array((3, 4, 5))
+aa = np.zeros(())
+b = np.array(((5, 4, 5)))
+print(a.shape)
+print(aa.shape)
+print(b.shape)
+print(a+b)
+print((a+b).shape)
+print(aa+b)
