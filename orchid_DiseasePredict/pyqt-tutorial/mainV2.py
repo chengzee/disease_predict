@@ -69,7 +69,7 @@ class MainWindow(QtWidgets.QMainWindow):
         labelStyle = {'color': '#000000', 'font-size': '14pt'}
         self.ui.graphicsView_2.setLabel('left', "Temperature & RH", units='Celsius & %', **labelStyle)
         self.ui.graphicsView_2.setLabel('right', "PAR", units='micro mol', **labelStyle)
-        self.ui.graphicsView_2.setLabel('bottom', "Date", **labelStyle)
+        # self.ui.graphicsView_2.setLabel('bottom', "Date", units='', **labelStyle)
         self.ui.graphicsView_2.setBackground('w')
         # graphicsView setting
         self.fixedsensors = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']

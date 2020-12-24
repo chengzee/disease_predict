@@ -14,7 +14,7 @@ rawdatas_array = np.array(rawdatas)
 # 輸出「病害死亡csv」，時間以timestamps來表示
 with open("target.csv", "w+") as targetfile:
     write = csv.writer(targetfile)
-    write.writerow(["Unix Time Stamps", "target", "No.plant", "Before_today Remain No."])
+    write.writerow(["Unix Time Stamps", "target", "No.plant", "First-Day Remain No."])
     for n in range(len(rawdatas_array[:, 0])):
         _time = int(time.mktime(time.strptime(str(rawdatas_array[n, 0]), "%Y-%m-%d %H:%M:%S")))
         for m in range(len(bed)):
@@ -54,13 +54,13 @@ for n in bed:
         if (no < len(PlantBed)-1) and (0 < targetRecent_arr[PlantBed, 0][no]-targetRecent_arr[PlantBed, 0][no+1] <= 172800):
             if (no < len(PlantBed)-2) and (0 < targetRecent_arr[PlantBed, 0][no]-targetRecent_arr[PlantBed, 0][no+2] <= 172800):
                 recently_dead = targetRecent_arr[PlantBed, 1][no] + targetRecent_arr[PlantBed, 1][no+1] + targetRecent_arr[PlantBed, 1][no+2]
-                print("recently_dead1:{}".format(recently_dead))
-                print("連續一天")
+                print("recently_dead_two_day:{}".format(recently_dead))
+                print("連續二天")
             else:
                 recently_dead = targetRecent_arr[PlantBed, 1][no] + targetRecent_arr[PlantBed, 1][no+1]
                 # targetRecent_arr[PlantBed[no], 1] = recently_dead
-                print("recently_dead2:{}".format(recently_dead))
-                print("連續二天")
+                print("recently_dead_one_day:{}".format(recently_dead))
+                print("連續一天")
         else:
             recently_dead = targetRecent_arr[PlantBed, 1][no]
             print("recently_dead0:{}".format(recently_dead))
