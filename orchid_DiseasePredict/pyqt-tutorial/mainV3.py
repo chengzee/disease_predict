@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow
-from V4 import Ui_MainWindow
+from V5 import Ui_MainWindow
 import sys
 import pyqtgraph as pg
 import time
@@ -22,15 +22,17 @@ class MainWindow(QtWidgets.QMainWindow):
         # ComboBox2
         self.ui.comboBox2.addItems(self.sensors)
         self.ui.comboBox2.currentIndexChanged.connect(self.changeFollowBedDisplay)
-        # checkBox1
-        self.ui.checkBox1.stateChanged.connect(self.show_Features)
-        # checkBox2
-        self.ui.checkBox2.stateChanged.connect(self.show_Features)
-        # checkBox3
-        self.ui.checkBox3.stateChanged.connect(self.show_Features)
+        # # checkBox1
+        # self.ui.checkBox1.stateChanged.connect(self.show_Features)
+        # # checkBox2
+        # self.ui.checkBox2.stateChanged.connect(self.show_Features)
+        # # checkBox3
+        # self.ui.checkBox3.stateChanged.connect(self.show_Features)
         self.changeFollowBedDisplay()
         # self.getFixFointData()
         self.timer = QtCore.QTimer()
+
+        # 每 2 分鐘刷新
         self.timer.setInterval(120*1000)
         # self.timer.timeout.connect(self.changeFollowBedDisplay, self.getFixFointData)
         self.timer.timeout.connect(self.changeFollowBedDisplay)
@@ -45,32 +47,41 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.label2.setText('隨床監測：')
         # groupBox
         self.ui.groupBox.setTitle('第六區')
-        # global checkBoxes
-        self.checkBoxes = [self.ui.checkBox1, self.ui.checkBox2, self.ui.checkBox3]
+        # # global checkBoxes
+        # self.checkBoxes = [self.ui.checkBox1, self.ui.checkBox2, self.ui.checkBox3]
         # ComboBox1
         self.section = ['第六區']
         # ComboBox2
-        self.sensors = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6',]
-        # checkBox1
-        self.ui.checkBox1.setText('溫度 (Temp)')
-        # checkBox2
-        self.ui.checkBox2.setText('濕度 (Humid)')
-        # checkBox3
-        self.ui.checkBox3.setText('光照量 (micromol)')
+        self.sensors = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9']
+        # # checkBox1
+        # self.ui.checkBox1.setText('溫度 (Temp)')
+        # # checkBox2
+        # self.ui.checkBox2.setText('濕度 (Humid)')
+        # # checkBox3
+        # self.ui.checkBox3.setText('光照量 (micromol)')
         # time
         self.time = time.time()
         # label-'voltage_meter'
         self.ui.voltage_meter.setText('電池更換警示')
         # label-'update_time'
         self.ui.update_time.setText('上次更新時間:')
-        # graphicsView_2 setting
-        self.para_names = ['temperature', 'humidity', 'light']
+        # color setting 
         self.colors = ["#D3D4", "#4B88A2", "#BB0A21"]
         labelStyle = {'color': '#000000', 'font-size': '14pt'}
-        self.ui.graphicsView_2.setLabel('left', "Temperature & RH", units='Celsius & %', **labelStyle)
-        self.ui.graphicsView_2.setLabel('right', "PAR", units='micro mol', **labelStyle)
-        # self.ui.graphicsView_2.setLabel('bottom', "Date", units='', **labelStyle)
+        
+        # graphicsView_2, 3, 4 
+        self.gV = [self.ui.graphicsView_2, self.ui.graphicsView_3, self.ui.graphicsView_4]
+        # graphicsView_2 setting
+        # self.para_names = ['temperature', 'humidity', 'light']
+        self.ui.graphicsView_2.setLabel('left', "Temperature", units='Celsius', **labelStyle)
         self.ui.graphicsView_2.setBackground('w')
+        # graphicsView_3 setting
+        self.ui.graphicsView_3.setLabel('left', "Relative Humidity", units='%', **labelStyle)
+        self.ui.graphicsView_3.setBackground('w')
+        # graphicsView_4 setting
+        # Photosynthetically Active Radiation
+        self.ui.graphicsView_4.setLabel('left', "PAR", units='micro mol/sec m^2', **labelStyle)
+        self.ui.graphicsView_4.setBackground('w')
         # graphicsView setting
         self.fixedsensors = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
 
@@ -107,15 +118,21 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.update_time.setText('上次更新時間:{}'.format(self.date_form))
         # Time~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+    # def show_Features(self):
+    #     self.ui.graphicsView_2.clear()
+    #     for n in range(len(self.checkBoxes)):
+    #         if self.checkBoxes[n].isChecked():
+    #             # self.checkBoxes[n].setBackground(self.colors[n])
+    #             print("add {} feature".format(self.para_names[n]))
+    #             self.ui.graphicsView_2.plot(self.timestamp, self.paras[n], pen=pg.mkPen(color=self.colors[n], width=3))
+    #             # self.ui.graphicsView_2.setXRange(self.time-24*60*60*3, self.time)
+    #             pg.QtGui.QApplication.processEvents()
     def show_Features(self):
-        self.ui.graphicsView_2.clear()
-        for n in range(len(self.checkBoxes)):
-            if self.checkBoxes[n].isChecked():
-                # self.checkBoxes[n].setBackground(self.colors[n])
-                print("add {} feature".format(self.para_names[n]))
-                self.ui.graphicsView_2.plot(self.timestamp, self.paras[n], pen=pg.mkPen(color=self.colors[n], width=3))
-                # self.ui.graphicsView_2.setXRange(self.time-24*60*60*3, self.time)
-                pg.QtGui.QApplication.processEvents()
+        for n in range(len(self.gV)):
+            self.gV[n].clear()
+            self.gV[n].plot(self.timestamp, self.paras[n], pen=pg.mkPen(color=self.colors[n], width=3))
+            # self.ui.graphicsView_2.setXRange(self.time-24*60*60*3, self.time)
+            pg.QtGui.QApplication.processEvents()
 
     # def getFixFointData(self):
     #     self.all_latest_temp = []
