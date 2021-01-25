@@ -1,5 +1,6 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel
+from PyQt5.QtGui import QIcon, QPixmap
 from V6 import Ui_MainWindow
 import sys
 import pyqtgraph as pg
@@ -41,6 +42,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # self.timer.timeout.connect(self.changeFollowBedDisplay, self.getFixFointData)
         self.timer.timeout.connect(self.changeFollowBedDisplay)
         self.timer.start()
+        self.show_img()
 
     def setUp(self):
         # MainWindow Title
@@ -92,18 +94,23 @@ class MainWindow(QtWidgets.QMainWindow):
         self.fixedsensors = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
 
     def update_current_thermal_plane(self):
-        # width, length = (3, 4)
-        width, length = (3, 3)
+        width, length = (3, 4)
+        # width, length = (3, 3)
         humid= np.zeros((width, length))
         temp = np.zeros((width, length))
         for w in range(width):
             for l in range(length):
                 try:
-                    rawdata = pd.read_csv("sensorNode{}.csv".format(3*l+w+1)) # 讀資料進來
-                    rawdata_array = np.array(rawdata) # 轉為矩陣
-                    # humid[w, l] =  3*l+w+1
-                    humid[w, l] = rawdata_array[-1, 1]
-                    temp[w, l] = rawdata_array[-1, 2]
+                    # rawdata = pd.read_csv("sensorNode{}.csv".format(3*l+w+1)) # 讀資料進來
+                    # rawdata_array = np.array(rawdata) # 轉為矩陣
+                    # 讀資料進來
+                    fixedPoint_dataUrl = url+"/"+self.fixedsensors[3*l+w]
+                    print(fixedPoint_dataUrl)
+                    fP_getjson = requests.get(fixedPoint_dataUrl).json()
+                    humid[w, l] = fP_getjson['data'][-1]['wetness']
+                    temp[w, l] = fP_getjson['data'][-1]['temperature']
+                    # print(humid)
+                    # print(temp)
                 except FileNotFoundError:
                     print("FileNotFoundError")
                     # humid[pose] = 0
@@ -112,12 +119,43 @@ class MainWindow(QtWidgets.QMainWindow):
                     print("Unexpected Error")
         # 在opencv中是(x, y)
         # dst_shape = (39, 28)
-        dst_shape = (2600, 2800)
+        # dst_shape = (2600, 2800)
+        dst_shape = (3900, 2800)
+        # dst_shape = (2800, 3900)
         humid_interpolation = cv2.resize(humid, dst_shape)
         temp_interpolation = cv2.resize(temp, dst_shape)
-
+        print(humid_interpolation.shape)
+        print(temp_interpolation.shape)
         # self.ui.graphicsViewI.show()
-        self.ui.graphicsViewI.setImage(humid_interpolation)
+        self.ui.graphicsViewI.setImage(humid_interpolation.T)
+
+    def show_img(self):
+        # pix = QPixmap(image_path)
+        # label_image = QLabel()
+        # label_image.setPixmap(QPixmap(image_path))
+        
+        # # Create widget
+        # self.ui.graphicsViewII = QLabel(self)
+        # pixmap = QPixmap("C:/Users/HUANG/Desktop/luongatt/5th_512neurons_1ENC-DEC_288-72_1.png")
+        # self.ui.graphicsViewII.setPixmap(pixmap)
+        # # self.resize(pixmap.width(),pixmap.height())
+        
+        # self.ui.graphicsViewII.show()
+
+        
+        scene = QtGui.QGraphicsScene()
+        img_path = "C:/Users/HUANG/Desktop/luongatt/5th_512neurons_1ENC-DEC_288-72_1.png"
+        #scene.setSceneRect(-600,-600, 600,600)
+        scene.setSceneRect(-600, -600, 1200, 1200)
+
+        pic = QtGui.QPixmap(img_path)
+        scene.addItem(QtGui.QGraphicsPixmapItem(pic))
+        # view = self.gv
+        self.ui.graphicsViewII.setScene(scene)
+        self.ui.graphicsViewII.setRenderHint(QtGui.QPainter.Antialiasing)
+        self.ui.graphicsViewII.show()
+
+
 
     def changeFollowBedDisplay(self):
         followBed = self.ui.comboBox2.currentText()
