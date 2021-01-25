@@ -1,10 +1,12 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow
-from V5 import Ui_MainWindow
+from V6 import Ui_MainWindow
 import sys
 import pyqtgraph as pg
 import time
 import cv2
+import pandas as pd
+import numpy as np
 
 import requests
 url = "https://monitor.icmems.ml/api/getDatas"
@@ -29,6 +31,8 @@ class MainWindow(QtWidgets.QMainWindow):
         # # checkBox3
         # self.ui.checkBox3.stateChanged.connect(self.show_Features)
         self.changeFollowBedDisplay()
+        # graphicsViewI
+        self.update_current_thermal_plane()
         # self.getFixFointData()
         self.timer = QtCore.QTimer()
 
@@ -69,7 +73,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.update_time.setText('上次更新時間:')
         # color setting 
         self.colors = ["#D3D4", "#4B88A2", "#BB0A21"]
-        labelStyle = {'color': '#000000', 'font-size': '14pt'}
+        labelStyle = {'color': '#000000', 'font-size': '8pt'}
         
         # graphicsView_2, 3, 4 
         self.gV = [self.ui.graphicsView_2, self.ui.graphicsView_3, self.ui.graphicsView_4]
@@ -87,6 +91,33 @@ class MainWindow(QtWidgets.QMainWindow):
         # graphicsView setting
         self.fixedsensors = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
 
+    def update_current_thermal_plane(self):
+        # width, length = (3, 4)
+        width, length = (3, 3)
+        humid= np.zeros((width, length))
+        temp = np.zeros((width, length))
+        for w in range(width):
+            for l in range(length):
+                try:
+                    rawdata = pd.read_csv("sensorNode{}.csv".format(3*l+w+1)) # 讀資料進來
+                    rawdata_array = np.array(rawdata) # 轉為矩陣
+                    # humid[w, l] =  3*l+w+1
+                    humid[w, l] = rawdata_array[-1, 1]
+                    temp[w, l] = rawdata_array[-1, 2]
+                except FileNotFoundError:
+                    print("FileNotFoundError")
+                    # humid[pose] = 0
+                    # temp[pose] = 0
+                except :
+                    print("Unexpected Error")
+        # 在opencv中是(x, y)
+        # dst_shape = (39, 28)
+        dst_shape = (2600, 2800)
+        humid_interpolation = cv2.resize(humid, dst_shape)
+        temp_interpolation = cv2.resize(temp, dst_shape)
+
+        # self.ui.graphicsViewI.show()
+        self.ui.graphicsViewI.setImage(humid_interpolation)
 
     def changeFollowBedDisplay(self):
         followBed = self.ui.comboBox2.currentText()
@@ -99,11 +130,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.humid = []
         self.light = []
         self.timestamp = []
-        for n in range(len(getjsons['data'][-288*5:])):
-            self.temp.append(getjsons['data'][n-288*5]['temperature'])
-            self.humid.append(getjsons['data'][n-288*5]['wetness'])
-            self.light.append(getjsons['data'][n-288*5]['par'])
-            self.timestamp.append(getjsons['data'][n-288*5]['time'])
+        for n in range(len(getjsons['data'][-288*1:])):
+            self.temp.append(getjsons['data'][n-288*1]['temperature'])
+            self.humid.append(getjsons['data'][n-288*1]['wetness'])
+            self.light.append(getjsons['data'][n-288*1]['par'])
+            self.timestamp.append(getjsons['data'][n-288*1]['time'])
         print(len(self.timestamp))
         print(len(self.temp))
         print(len(self.humid))
