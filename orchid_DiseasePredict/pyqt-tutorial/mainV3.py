@@ -47,6 +47,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.label2.setText('隨床監測：')
         # groupBox
         self.ui.groupBox.setTitle('第六區')
+        # groupBox_2
+        self.ui.groupBox_2.setTitle('第六區預測')
         # # global checkBoxes
         # self.checkBoxes = [self.ui.checkBox1, self.ui.checkBox2, self.ui.checkBox3]
         # ComboBox1
