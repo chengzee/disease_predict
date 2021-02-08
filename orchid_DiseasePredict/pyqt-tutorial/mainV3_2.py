@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel
 from PyQt5.QtGui import QIcon, QPixmap
-from V7 import Ui_MainWindow
+from V8 import Ui_MainWindow
 import sys
 import pyqtgraph as pg
 import time
@@ -50,8 +50,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def setUp(self):
         # MainWindow Title
         self.setWindowTitle('蘭花微氣候監測系統')
-        # label1
-        self.ui.label1.setText('第六區監測')
+        # # label1
+        # self.ui.label1.setText('第六區監測')
         # label2
         self.ui.label2.setText('隨床監測：')
         # groupBox
@@ -95,6 +95,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.graphicsView_4.setBackground('w')
         # graphicsView setting
         self.fixedsensors = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
+
+        # label
+        self.ui.label.setText('病害嚴重程度預估：')
 
     def update_current_thermal_plane(self):
         width, length = (3, 4)
