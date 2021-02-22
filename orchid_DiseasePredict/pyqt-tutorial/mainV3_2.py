@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel
 from PyQt5.QtGui import QIcon, QPixmap
-from V6 import Ui_MainWindow
+from V8 import Ui_MainWindow
 import sys
 import pyqtgraph as pg
 import time
@@ -34,6 +34,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.changeFollowBedDisplay()
         # graphicsViewI
         self.update_current_thermal_plane()
+        # graphicsViewII
+        self.update_current_thermal_plane_II()
         # self.getFixFointData()
         self.timer = QtCore.QTimer()
 
@@ -42,13 +44,14 @@ class MainWindow(QtWidgets.QMainWindow):
         # self.timer.timeout.connect(self.changeFollowBedDisplay, self.getFixFointData)
         self.timer.timeout.connect(self.changeFollowBedDisplay)
         self.timer.start()
-        self.show_img()
+
+        # self.show_img()
 
     def setUp(self):
         # MainWindow Title
         self.setWindowTitle('蘭花微氣候監測系統')
-        # label1
-        self.ui.label1.setText('第六區監測')
+        # # label1
+        # self.ui.label1.setText('第六區監測')
         # label2
         self.ui.label2.setText('隨床監測：')
         # groupBox
@@ -92,6 +95,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.graphicsView_4.setBackground('w')
         # graphicsView setting
         self.fixedsensors = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
+
+        # label
+        self.ui.label.setText('病害嚴重程度預估：')
 
     def update_current_thermal_plane(self):
         width, length = (3, 4)
@@ -141,19 +147,67 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.graphicsViewI.setImage(humid_interpolation.T)
         # self.ui.graphicsViewI.histogram.hide()
 
-    def show_img(self):
-        scene = QtGui.QGraphicsScene()
-        img_path = "C:/Users/USER/Desktop/git__/climate_predict/orchid_ClimatePredict/LuongAtt_byCZ/1th_64neurons_1ENC-DEC_288-72_1.png"
-        #scene.setSceneRect(-600,-600, 600,600)
-        # scene.setSceneRect(-600, -600, 1200, 1200)
 
-        pic = QtGui.QPixmap(img_path)
-        pic = pic.scaled(500,275)
-        scene.addItem(QtGui.QGraphicsPixmapItem(pic))
-        # view = self.gv
-        self.ui.graphicsViewII.setScene(scene)
-        self.ui.graphicsViewII.setRenderHint(QtGui.QPainter.Antialiasing)
-        self.ui.graphicsViewII.show()
+    def update_current_thermal_plane_II(self):
+        width, length = (3, 4)
+        # width, length = (3, 3)
+        humid= np.zeros((width, length))
+        temp = np.zeros((width, length))
+        for w in range(width):
+            for l in range(length):
+                try:
+                    # rawdata = pd.read_csv("sensorNode{}.csv".format(3*l+w+1)) # 讀資料進來
+                    # rawdata_array = np.array(rawdata) # 轉為矩陣
+                    # 讀資料進來
+                    fixedPoint_dataUrl = url+"/"+self.fixedsensors[3*l+w]
+                    print(fixedPoint_dataUrl)
+                    fP_getjson = requests.get(fixedPoint_dataUrl).json()
+                    humid[w, l] = fP_getjson['data'][-50]['wetness']
+                    temp[w, l] = fP_getjson['data'][-50]['temperature']
+                    # print(humid)
+                    # print(temp)
+                except FileNotFoundError:
+                    print("FileNotFoundError")
+                    # humid[pose] = 0
+                    # temp[pose] = 0
+                except :
+                    print("Unexpected Error")
+        # 在opencv中是(x, y)
+        # dst_shape = (39, 28)
+        # dst_shape = (2600, 2800)
+        dst_shape = (3900, 2800)
+        # dst_shape = (2800, 3900)
+        humid_interpolation = cv2.resize(humid, dst_shape)
+        temp_interpolation = cv2.resize(temp, dst_shape)
+        print(humid_interpolation.shape)
+        print(temp_interpolation.shape)
+        # Set a custom color map 
+        colors = [ 
+            (255, 255, 0), 
+            (50, 205, 50), 
+            (0, 0, 198)
+        ] 
+  
+        # color map 
+        cmap = pg.ColorMap(pos=np.linspace(0.0, 1.0, 3), color=colors) 
+  
+        # setting color map to the image view 
+        self.ui.graphicsViewII.setColorMap(cmap)
+        self.ui.graphicsViewII.setImage(humid_interpolation.T)
+
+    # def show_img(self):
+    #     scene = QtGui.QGraphicsScene()
+    #     img_path = "C:/Users/HUANG/Desktop/luongatt/5th_512neurons_1ENC-DEC_288-72_1.png"
+    #     #scene.setSceneRect(-600,-600, 600,600)
+    #     # scene.setSceneRect(-600, -600, 1200, 1200)
+
+    #     pic = QtGui.QPixmap(img_path)
+    #     pic = pic.scaled(500,275)
+    #     scene.addItem(QtGui.QGraphicsPixmapItem(pic))
+    #     # view = self.gv
+    #     self.ui.graphicsViewII.setScene(scene)
+    #     self.ui.graphicsViewII.setRenderHint(QtGui.QPainter.Antialiasing)
+    #     self.ui.graphicsViewII.show()
 
 
 
@@ -168,11 +222,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.humid = []
         self.light = []
         self.timestamp = []
-        for n in range(len(getjsons['data'][-100:])):
-            self.temp.append(getjsons['data'][n-100]['temperature'])
-            self.humid.append(getjsons['data'][n-100]['wetness'])
-            self.light.append(getjsons['data'][n-100]['par']/55)
-            self.timestamp.append(getjsons['data'][n-100]['time'])
+        for n in range(len(getjsons['data'][-150:])):
+            self.temp.append(getjsons['data'][n-150]['temperature'])
+            self.humid.append(getjsons['data'][n-150]['wetness'])
+            self.light.append(getjsons['data'][n-150]['par']/55)
+            self.timestamp.append(getjsons['data'][n-150]['time'])
         print(len(self.timestamp))
         print(len(self.temp))
         print(len(self.humid))
@@ -188,35 +242,13 @@ class MainWindow(QtWidgets.QMainWindow):
         print(type(self.date_form))
         self.ui.update_time.setText('上次更新時間:{}'.format(self.date_form))
         # Time~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    # def show_Features(self):
-    #     self.ui.graphicsView_2.clear()
-    #     for n in range(len(self.checkBoxes)):
-    #         if self.checkBoxes[n].isChecked():
-    #             # self.checkBoxes[n].setBackground(self.colors[n])
-    #             print("add {} feature".format(self.para_names[n]))
-    #             self.ui.graphicsView_2.plot(self.timestamp, self.paras[n], pen=pg.mkPen(color=self.colors[n], width=3))
-    #             # self.ui.graphicsView_2.setXRange(self.time-24*60*60*3, self.time)
-    #             pg.QtGui.QApplication.processEvents()
+        
     def show_Features(self):
         for n in range(len(self.gV)):
             self.gV[n].clear()
             self.gV[n].plot(self.timestamp, self.paras[n], pen=pg.mkPen(color=self.colors[n], width=3))
             # self.ui.graphicsView_2.setXRange(self.time-24*60*60*3, self.time)
             pg.QtGui.QApplication.processEvents()
-
-    # def getFixFointData(self):
-    #     self.all_latest_temp = []
-    #     self.all_latest_humid = []
-    #     self.all_latest_light = []
-    #     self.ui.graphicsView.clear()
-    #     for n in self.fixedsensors:
-    #         fixdataURL = url+"/"+self.fixedsensors[n]
-    #         fixdata_getjsons = requests.get(fixdataURL).json()
-    #         self.all_latest_temp.append(fixdata_getjsons['data'][-1]['temperature'])
-    #         self.all_latest_humid.append(fixdata_getjsons['data'][-1]['wetness'])
-    #         self.all_latest_light.append(fixdata_getjsons['data'][-1]['par'])
-        
 
 
 if __name__ == '__main__':
