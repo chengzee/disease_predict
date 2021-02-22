@@ -144,9 +144,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         
         scene = QtGui.QGraphicsScene()
-        img_path = "C:/Users/HUANG/Desktop/luongatt/5th_512neurons_1ENC-DEC_288-72_1.png"
+        img_path = "C:/Users/USER/Desktop/git__/climate_predict/orchid_ClimatePredict/LuongAtt_byCZ/1th_64neurons_1ENC-DEC_288-72_1.png"
         #scene.setSceneRect(-600,-600, 600,600)
-        scene.setSceneRect(-600, -600, 1200, 1200)
+        # scene.setSceneRect(-600, -600, 1200, 1200)
 
         pic = QtGui.QPixmap(img_path)
         scene.addItem(QtGui.QGraphicsPixmapItem(pic))
