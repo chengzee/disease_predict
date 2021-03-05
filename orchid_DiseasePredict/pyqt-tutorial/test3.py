@@ -48,9 +48,9 @@ for fs in range(12):
                 LossValue = (rawdata_array[n:n+1, 1:4]-rawdata_array[n-1:n, 1:4])/(LossNumber+1)
                 # 如果二小時的關機後再重啟，會另行註記，之後將可能會不採用有包含該範圍的數據
                 if diff_step > 24:
-                    padding_array = np.zeros((LossNumber, 5))
+                    padding_array = np.zeros((LossNumber, 4))
                 if diff_step <= 24:
-                    padding_array = np.ones((LossNumber, 5))
+                    padding_array = np.ones((LossNumber, 4))
                 for v in range(LossNumber):
                     padding_array[v:v+1, 0:1] = rawdata_array[n-1, 0] + time_interval*(v+1)
                     padding_array[v:v+1, 1:4] = rawdata_array[n-1:n, 1:4] + LossValue*(v+1)
