@@ -18,17 +18,21 @@ humid = [[], [], [], [], [], [], [], [], [], [], [], []]
 light = [[], [], [], [], [], [], [], [], [], [], [], []]
 timestamp = [[], [], [], [], [], [], [], [], [], [], [], []]
 predictions= [[], [], [], [], [], [], [], [], [], [], [], []]
-
+_lookback = 288
+_source_dim = 3
+_predict_dim = 1
+_delay = 24
 for fs in range(12):
     dataUrl = url + "/" + str(fs+1)
     print(dataUrl)
     getjsons = requests.get(dataUrl).json()
     # print(len(getjsons["data"]))
-    for n in range(len(getjsons['data'][-500:])):
-        temp[fs].append(getjsons['data'][n-500]['temperature'])
-        humid[fs].append(getjsons['data'][n-500]['wetness'])
-        light[fs].append(getjsons['data'][n-500]['par']/55)
-        timestamp[fs].append(getjsons['data'][n-500]['time'])
+    # 取欲預測的資料長度
+    for n in range(len(getjsons['data'][-_lookback:])):
+        temp[fs].append(getjsons['data'][n-_lookback]['temperature'])
+        humid[fs].append(getjsons['data'][n-_lookback]['wetness'])
+        light[fs].append(getjsons['data'][n-_lookback]['par']/55)
+        timestamp[fs].append(getjsons['data'][n-_lookback]['time'])
     temp_arr = np.array(temp[fs]).reshape(-1, 1)
     humid_arr = np.array(humid[fs]).reshape(-1, 1)
     light_arr = np.array(light[fs]).reshape(-1, 1)
@@ -59,7 +63,7 @@ for fs in range(12):
                 paddeddata_array = np.vstack((np.vstack((paddeddata_array[:n+total_LossNumber], padding_array)), paddeddata_array[n+total_LossNumber:]))    
                 total_LossNumber += LossNumber
     # model functional
-    input_seq = tf.keras.Input(shape=(_lookback, source_dim))
+    input_seq = tf.keras.Input(shape=(_lookback, _source_dim))
     encoder_stack_h, enc_last_h = Encoder(neuron, A, _lookback, _source_dim)(input_seq)
     decoder_input = tf.keras.layers.RepeatVector(_delay)(enc_last_h)
     decoder_stack_h = Decoder(neuron, A)(decoder_input)

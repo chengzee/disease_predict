@@ -47,7 +47,7 @@ target_list = []
 train_size = 0.7
 neurons = [64, 128, 256, 512, 1024]
 # neurons = [1024]
-source_dim = 3
+_source_dim = 3
 predict_dim = 1
 test_times = 6
 BATCH_SIZE = 256
@@ -101,11 +101,11 @@ print("y_train.shape:{}".format(y_train.shape))
 print("y_test.shape:{}".format(y_test.shape))
 
 class Encoder(tf.keras.layers.Layer):
-    def __init__(self, _neurons, enc_layers, _lookback, source_dim):
+    def __init__(self, _neurons, enc_layers, lookback, source_dim):
         super(Encoder, self).__init__()
         self.layers = enc_layers
-        self.first_layers_lstm = tf.keras.layers.LSTM(_neurons, input_shape=(_lookback, source_dim), return_sequences=True)
-        self.multi_layers_lstm = tf.keras.layers.LSTM(_neurons, input_shape=(_lookback, _neurons), return_sequences=True)
+        self.first_layers_lstm = tf.keras.layers.LSTM(_neurons, input_shape=(lookback, source_dim), return_sequences=True)
+        self.multi_layers_lstm = tf.keras.layers.LSTM(_neurons, input_shape=(lookback, _neurons), return_sequences=True)
         # self.multi_layers_lstm = tf.keras.layers.LSTM(_neurons, return_sequences=True, return_state=True)
 
     def get_config(self):
@@ -179,8 +179,8 @@ for A in range(A_layers):
 
             # 參考 https://levelup.gitconnected.com/building-seq2seq-lstm-with-luong-attention-in-keras-for-time-series-forecasting-1ee00958decb
             # functional
-            input_seq = tf.keras.Input(shape=(_lookback, source_dim))
-            encoder_stack_h, enc_last_h = Encoder(neuron, A)(input_seq)
+            input_seq = tf.keras.Input(shape=(_lookback, _source_dim))
+            encoder_stack_h, enc_last_h = Encoder(neuron, A, _lookback, _source_dim)(input_seq)
             decoder_input = tf.keras.layers.RepeatVector(_delay)(enc_last_h)
             decoder_stack_h = Decoder(neuron, A)(decoder_input)
             # attention layer
@@ -197,7 +197,7 @@ for A in range(A_layers):
 
             # # Sequential
             # model = tf.keras.Sequential()
-            # model.add(tf.keras.Input(shape=(_lookback, source_dim)))
+            # model.add(tf.keras.Input(shape=(_lookback, _source_dim)))
             # for aa in range(A):
             #     model.add(tf.keras.layers.LSTM(neuron, return_sequences=True))
             # model.add(tf.keras.layers.LSTM(neuron, return_sequences=False))
