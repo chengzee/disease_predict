@@ -126,9 +126,10 @@ class MainWindow(QtWidgets.QMainWindow):
         # 在opencv中是(x, y)
         # dst_shape = (39, 28)
         # dst_shape = (2600, 2800)
+        # 還需要確認"確切長寬比例"
         dst_shape = (3900, 2800)
         # dst_shape = (2800, 3900)
-        humid_interpolation = cv2.resize(humid, dst_shape)
+        humid_interpolation = cv2.resize(humid, dst_shape) # (2800, 3900)
         temp_interpolation = cv2.resize(temp, dst_shape)
         print(humid_interpolation.shape)
         print(temp_interpolation.shape)
